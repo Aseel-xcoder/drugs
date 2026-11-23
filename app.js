@@ -96,6 +96,13 @@ async function loadJSON(path) {
   return r.json();
 }
 
+/* صفوف الربط: resultResponse عادةً قائمة، لكن بعض الصفوف في
+   البيانات الأصلية قيمتها نص "NOT_DATA" — نعاملها كقائمة فارغة. */
+function respRows(l) {
+  const r = l.resultResponse;
+  return Array.isArray(r) ? r : [];
+}
+
 async function loadCore() {
   const [scientific, d1, d2, d3, d4, proxies, companies, classes, classLinks] = await Promise.all([
     loadJSON('data/scientific.json'),
@@ -112,8 +119,7 @@ async function loadCore() {
   classes.forEach(c => { classById[c.classId] = c; });
   const classesBySci = {};
   classLinks.forEach(l => {
-    const resp = l.resultResponse || [];
-    resp.forEach(r => {
+    respRows(l).forEach(r => {
       const c = classById[r.classId];
       if (!c) return;
       (classesBySci[l.scientificId] = classesBySci[l.scientificId] || []).push(c);
@@ -141,7 +147,7 @@ async function ensureExtra(group) {
     state.diseases = disease.filter(d => d.diseaseId && (d.diseaseEn || d.diseaseAr));
     state.diseaseSciIds = {}; state.sciDiseases = {};
     links.forEach(l => {
-      (l.resultResponse || []).forEach(r => {
+      respRows(l).forEach(r => {
         if (!r.diseaseId || !l.scientificId) return;
         (state.diseaseSciIds[r.diseaseId] = state.diseaseSciIds[r.diseaseId] || new Set()).add(l.scientificId);
         const list = (state.sciDiseases[l.scientificId] = state.sciDiseases[l.scientificId] || []);
@@ -156,7 +162,7 @@ async function ensureExtra(group) {
     state.effects = eff.filter(e => e.effectsId);
     state.effectSciIds = {}; state.sciEffects = {};
     c1.concat(c2).forEach(l => {
-      (l.resultResponse || []).forEach(r => {
+      respRows(l).forEach(r => {
         if (!r.effectsId || !l.scientificId) return;
         (state.effectSciIds[r.effectsId] = state.effectSciIds[r.effectsId] || new Set()).add(l.scientificId);
         const list = (state.sciEffects[l.scientificId] = state.sciEffects[l.scientificId] || []);
@@ -176,7 +182,7 @@ async function ensureExtra(group) {
     links.forEach(l => {
       const sciId = l.scientificId, groupId = l.interactionsId;
       if (sciId && groupId) state.sciToInter[sciId] = groupId;
-      (l.resultResponse || []).forEach(p => {
+      respRows(l).forEach(p => {
         const id1 = p.interactions1Id, id2 = p.interactions2Id;
         if (!id1 || !id2) return;
         const post = { other: id1 === groupId ? id2 : id1, serious: p.seriousInteractions, textAr: p.postInteractionsAr || '', textEn: p.postInteractionsEn || '' };
@@ -194,7 +200,7 @@ async function ensureExtra(group) {
       const sciId = l.scientificId;
       if (!sciId || state.pregBySci[sciId]) return;
       let au = null, us = null;
-      (l.resultResponse || []).forEach(d => {
+      respRows(l).forEach(d => {
         const cat = state.pregCat[d.pregnancyId];
         if (!cat) return;
         if (d.globalSystem === 'AU' && au === null) au = cat;
