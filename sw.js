@@ -1,7 +1,7 @@
 /* الدليل اليمني الشامل للأدوية — service worker للتثبيت والعمل دون اتصال.
    يخبّئ الواجهة والبيانات الأساسية عند أول زيارة؛ ملفات الجولة الثانية
    تُخبَّأ عند أول استخدام لها. */
-const CACHE = 'aseel-drugs-v1';
+const CACHE = 'aseel-drugs-v2';
 const CORE = [
   './', 'index.html', 'style.css', 'app.js', 'manifest.json',
   'icon-192.png', 'icon-512.png',
