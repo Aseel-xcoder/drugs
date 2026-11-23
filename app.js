@@ -818,3 +818,11 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#view').innerHTML = '<div class="empty-state"><h3>تعذّر تحميل البيانات</h3><p>' + esc(err.message || '') + '</p><p>تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. ملفات البيانات في مجلد data/ بجانب هذه الصفحة.</p></div>';
   });
 });
+
+/* تثبيت كتطبيق (PWA): service worker يخبّئ الموقع فيعمل دون اتصال
+   بعد أول زيارة، ويتيح «تثبيت التطبيق» من متصفح كروم. */
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
