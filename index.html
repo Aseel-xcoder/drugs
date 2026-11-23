@@ -9,43 +9,49 @@
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar" aria-label="التنقل الرئيسي">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+<div class="app">
+  <!-- الترويسة (200px، تدرج #055D72→#078B99→#1BAEBA) — مطابقة للتطبيق -->
+  <header class="hero" id="heroBox">
+    <div class="hero-ring" aria-hidden="true"></div>
+    <div class="hero-fill" aria-hidden="true"></div>
+    <a class="hero-reason" id="heroReason" href="https://t.me/Med_tips_and_tricks" target="_blank" rel="noopener">Dr. Reason</a>
+    <div class="hero-content">
+      <div class="hero-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.8 3.8a6.3 6.3 0 0 1 9 8.9l-6.2 6.2a6.3 6.3 0 1 1-8.9-8.9z"/><path d="M8.5 9.1l6.5 6.5"/></svg>
+      </div>
+      <div class="hero-title">الدليل اليمني الشامل للأدوية</div>
+      <div class="hero-eyebrow">مرجعك الدوائي</div>
     </div>
-    <div>
-      <div class="brand-name">الدليل اليمني الشامل للأدوية</div>
-      <div class="brand-sub">مرجعك الدوائي — يعمل في كل مكان</div>
-    </div>
-  </div>
-  <nav class="nav" id="mainNav"></nav>
-  <div class="sidebar-foot">
-    نسخة الويب — تعمل في أي متصفح بدون تثبيت.<br>
-    البيانات من قاعدة بيانات التطبيق الأصلي.
-  </div>
-</aside>
-
-<div class="main">
-  <header class="topbar">
-    <button class="menu-btn" id="menuBtn" aria-label="القائمة">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    </button>
-    <div class="topbar-title">الدليل اليمني الشامل للأدوية</div>
-    <div class="topbar-note" id="topbarNote">جاري تجهيز البيانات…</div>
   </header>
 
-  <main class="content" id="view" aria-live="polite">
-    <div class="loading"><div class="spin"></div>جاري تجهيز البيانات…</div>
-  </main>
+  <!-- المحتوى (بطاقة البحث تتداخل 42px فوق الترويسة، كما في التطبيق) -->
+  <div class="content-box" id="contentBox">
+    <section class="search-card" aria-label="بحث">
+      <div class="search-head">
+        <div class="search-titles">
+          <div class="search-title">ابحث عن دواء</div>
+          <div class="search-eyebrow">بحث سريع ودقيق</div>
+        </div>
+        <button class="home-from-search" id="homeFromSearch" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H4m6-6-6 6 6 6"/></svg>
+          الرئيسية
+        </button>
+        <div class="search-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#078C9A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.8 3.8a6.3 6.3 0 0 1 9 8.9l-6.2 6.2a6.3 6.3 0 1 1-8.9-8.9z"/><path d="M8.5 9.1l6.5 6.5"/></svg>
+        </div>
+      </div>
+      <div class="search-row">
+        <input id="searchBox" type="search" placeholder="اكتب اسم الدواء…" autocomplete="off" aria-label="ابحث عن دواء">
+        <button id="searchTrigger" type="button" aria-label="بحث">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 10.8a6.7 6.7 0 1 0-13.4 0 6.7 6.7 0 1 0 13.4 0"/><path d="M16 16l5 5"/></svg>
+        </button>
+      </div>
+    </section>
 
-  <footer class="footer">
-    <a class="reason-badge" href="https://t.me/Med_tips_and_tricks" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" fill="#fff" transform="translate(0.5 0) scale(0.9)"/></svg>
-      Done by Dr. Reason
-    </a>
-    <div class="footer-note">نسخة الويب من الدليل اليمني الشامل للأدوية — بدون تسجيل دخول، بدون تثبيت.</div>
-  </footer>
+    <main id="view" aria-live="polite">
+      <div class="loading"><div class="spin"></div>جاري تجهيز الداتا…</div>
+    </main>
+  </div>
 </div>
 
 <script src="app.js"></script>

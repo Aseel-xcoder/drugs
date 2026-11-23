@@ -1,11 +1,13 @@
 /* الدليل اليمني الشامل للأدوية — نسخة الويب
+   واجهة مطابقة للتطبيق الأصلي v7.10 (نفس التخطيطات والألوان والأيقونات
+   من res/layout و res/drawable): ترويسة فيروزية، بطاقة بحث تتداخل
+   فوقها، شبكة الأقسام التسع، بطاقات نتائج مدمجة، تفاصيل بأقسام زرقاء.
    لا خادم، لا تسجيل دخول، لا تتبّع. البيانات ملفات JSON محلية تُحمَّل
    من مجلد data/؛ الأساسية أولاً، وملفات الجولة الثانية عند الحاجة فقط. */
 'use strict';
 
 /* ================= أدوات ================= */
 const $ = (s, r) => (r || document).querySelector(s);
-const view = $('#view');
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -31,44 +33,55 @@ function normalize(s) {
   return out.trim().replace(/\s+/g, ' ');
 }
 
-/* ================= أيقونات SVG ================= */
+/* ================= أيقونات SVG — منسوخة من res/drawable الأصلية =================
+   stroke باللون الحالي، ما عدا bottle_filled (مملوءة). */
 const ICONS = {
-  home: '<path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/>',
-  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
-  building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M2 22h20"/><path d="M9 6h1M14 6h1M9 10h1M14 10h1M9 14h1M14 14h1M10 22v-4h4v4"/>',
-  dollar: '<circle cx="12" cy="12" r="10"/><path d="M16.5 8.5c-.7-1-1.8-1.5-4.5-1.5s-3.6.7-3.6 2.1c0 3 8.2 1.5 8.2 4.4 0 1.4-1.4 2.1-4.1 2.1s-3.7-.5-4.5-1.5"/><path d="M12 5.5v13"/>',
-  flask: '<path d="M10 2v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8V2"/><path d="M8.5 2h7"/><path d="M7 15h10"/>',
-  interaction: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
-  shield: '<path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10Z"/><path d="m9 11.5 2 2 4-4"/>',
-  heart: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3.4 1-4.5 2.5C10.9 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/>',
-  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
-  molecule: '<circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="m6.8 6.8 3.4 3.4M17.2 6.8l-3.4 3.4M6.8 17.2l3.4-3.4M17.2 17.2l-3.4-3.4"/>',
-  clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/>',
-  bottle: '<path d="M10 2h4"/><path d="M11 2v4.5L8 9v11a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V9l-3-2.5V2"/><path d="M8 13h8"/>',
-  sachet: '<rect x="3" y="8" width="12" height="13" rx="2" transform="rotate(-8 9 14)"/><rect x="10" y="3" width="12" height="13" rx="2" transform="rotate(10 16 9)"/>',
-  tablets: '<rect x="2" y="9" width="11" height="7" rx="3.5" transform="rotate(-30 7.5 12.5)"/><rect x="11" y="9" width="11" height="7" rx="3.5" transform="rotate(30 16.5 12.5)"/>'
+  pill: { vb: 24, d: '<path d="M9.8 3.8a6.3 6.3 0 0 1 9 8.9l-6.2 6.2a6.3 6.3 0 1 1-8.9-8.9z"/><path d="M8.5 9.1l6.5 6.5"/>' },
+  search: { vb: 24, d: '<path d="M17.5 10.8a6.7 6.7 0 1 0-13.4 0a6.7 6.7 0 1 0 13.4 0"/><path d="M16 16l5 5"/>' },
+  building: { vb: 24, d: '<path d="M4 21V5l8-2v18M12 10h8v11M2 21h20M7 7h2M7 11h2M7 15h2M16 13h1M16 17h1"/>' },
+  dollar: { vb: 24, d: '<path d="M12 2v20m5-16H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><path d="M3 8h2"/>' },
+  flask: { vb: 24, d: '<path d="M8 3h8M10 3v7l-6 9a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-6-9V3M7 16h10"/>' },
+  interaction: { vb: 24, d: '<path d="M4 7h15l-4-4M20 17H5l4 4M19 7l-4 4M5 17l4-4"/>' },
+  shield: { vb: 24, d: '<path d="m12 2 8.5 4v6c0 5.5-3.5 8.5-8.5 10-5-1.5-8.5-4.5-8.5-10V6L12 2Z"/><path d="M12 8v5M12 17h.01"/>' },
+  heart: { vb: 24, d: '<path d="M20.5 8.7c0 5.2-8.5 10.8-8.5 10.8S3.5 13.9 3.5 8.7a4.8 4.8 0 0 1 8.5-2.9 4.8 4.8 0 0 1 8.5 2.9Z"/><path d="m5 12 3-0.1 1.8-3 3.1 6 2.1-3H19"/>' },
+  book: { vb: 24, d: '<path d="M12 5c-3-2-6.7-2.2-10-1v15c3.3-1.2 7-1 10 1 3-2 6.7-2.2 10-1V4c-3.3-1.2-7-.9-10 1ZM12 5v15M5 8h4M15 8h4"/>' },
+  molecule: { vb: 24, d: '<path d="M3.2 7.2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M16.6 5.5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M9.5 13a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/><path d="M17 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M2.7 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="m7 8.4 3 3M14.1 11l3.3-4m-4 8 4.4 3.5M10 15l-4 3"/>' },
+  clipboard: { vb: 24, d: '<path d="M6.5 4h11a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-11a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2Z"/><path d="M9 4V2h6v2M8 10h8m-8 4h8m-8 4h5"/>' },
+  arrow: { vb: 24, d: '<path d="M20 12H4m6-6-6 6 6 6"/>' },
+  info: { vb: 24, d: '<path d="M21 12a9 9 0 1 0-18 0a9 9 0 1 0 18 0"/><path d="M12 11v6M12 7h.01"/>' },
+  layers: { vb: 24, d: '<path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/>' },
+  chevron: { vb: 24, d: '<path d="M15 6l-6 6 6 6"/>' },
+  bottle_filled: { vb: 48, fill: true, d: '<path d="M17 5h14v6H17z"/><path d="M19 11v5c-5 3-6 6-6 10v15c0 2 1.5 3 3 3h16c2 0 3-1 3-3V26c0-4-1-7-6-10v-5"/><path d="M13 25h22v12H13z"/>' },
+  sachet: { vb: 48, d: '<path d="M6 38 V7 Q6 4 9 4 H28 Q31 4 31 7 V9"/><path d="M17.5 9 H38.5 Q41 9 41 11.5 V38.5 Q41 41 38.5 41 H17.5 Q15 41 15 38.5 V11.5 Q15 9 17.5 9 Z"/><path d="M20 12.5 H36 Q37.5 12.5 37.5 14 V36 Q37.5 37.5 36 37.5 H20 Q18.5 37.5 18.5 36 V14 Q18.5 12.5 20 12.5 Z"/><path d="M18.5 30 Q24 25.5 28 30 Q32 34.5 37.5 29.5 L37.5 36 L18.5 36 Z"/>' },
+  tablets: { vb: 48, d: '<path d="M9.73 15.48 L17.9 8.12 A7 7 0 0 1 27.79 8.64 L27.79 8.64 A7 7 0 0 1 27.27 18.52 L19.1 25.88 A7 7 0 0 1 9.21 25.36 L9.21 25.36 A7 7 0 0 1 9.73 15.48 Z"/><path d="M42.26 23.5 A13 8 -30 0 1 19.74 36.5 A13 8 -30 0 1 42.26 23.5 Z"/><path d="M13 11l9.5 10"/><path d="M20 32c8 3 15 1 22-7"/>' }
 };
 function icon(name, size) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="' + (size || 20) + '" height="' + (size || 20) + '" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+  const ic = ICONS[name] || ICONS.pill;
+  const s = size || 20;
+  if (ic.fill) {
+    return '<svg viewBox="0 0 ' + ic.vb + ' ' + ic.vb + '" fill="currentColor" stroke="none" width="' + s + '" height="' + s + '" aria-hidden="true">' + ic.d + '</svg>';
+  }
+  return '<svg viewBox="0 0 ' + ic.vb + ' ' + ic.vb + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="' + s + '" height="' + s + '" aria-hidden="true">' + ic.d + '</svg>';
 }
+/* أيقونة شكل العبوة — نفس منطق التطبيق: sachet أولاً، ثم ml قارورة، وإلا حبتان. */
 function packIcon(pack) {
   const p = (pack || '').toLowerCase();
   if (p.indexOf('sachet') !== -1) return icon('sachet', 32);
-  if (p.indexOf('ml') !== -1) return icon('bottle', 32);
+  if (p.indexOf('ml') !== -1) return icon('bottle_filled', 32);
   return icon('tablets', 32);
 }
 
-/* ================= الأقسام ================= */
+/* ================= الأقسام التسع — بنفس ترتيب وألوان التطبيق ================= */
 const SECTIONS = [
-  { key: 'agencies', title: 'الوكالات الدوائية', desc: 'قائمة الوكلاء المسجّلين في قاعدة البيانات — اضغط على أي وكيل لعرض أصنافه.', icon: 'building' },
-  { key: 'priced', title: 'الأصناف المسعرة', desc: 'فهرس الأصناف المسجلة في قاعدة البيانات — اضغط على أي صنف لعرض تفاصيله.', icon: 'dollar' },
-  { key: 'indications', title: 'دواعي الاستعمال', desc: 'دواعي الاستعمال المعتمدة من قاعدة بيانات التطبيق — اضغط على أي اسم علمي لعرض أصنافه.', icon: 'flask' },
-  { key: 'interactions', title: 'التفاعلات الدوائية', desc: 'افحص التفاعل بين دوائين بالاسم العلمي.', icon: 'interaction' },
-  { key: 'adverse', title: 'الآثار الجانبية', desc: 'الآثار الجانبية المسجلة مع عدد الأدوية المرتبطة بكل أثر.', icon: 'shield' },
-  { key: 'diseases', title: 'فئة الأمراض', desc: 'فئات الأمراض مع عدد الأدوية المرتبطة بكل فئة.', icon: 'heart' },
-  { key: 'directory', title: 'الدليل الطبي', desc: 'الدليل الطبي — قائمة الشركات المسجّلة في قاعدة البيانات، اضغط على أي شركة لعرض أصنافها.', icon: 'book' },
-  { key: 'scientific', title: 'فئة الاسم العلمي', desc: 'فئات الأسماء العلمية مرتبة أبجدياً من قاعدة الأدوية — اضغط على أي اسم لعرض أصنافه.', icon: 'molecule' },
-  { key: 'prescriptions', title: 'وصفة', desc: 'لا توجد بيانات وصفات في قاعدة البيانات.', icon: 'clipboard' }
+  { key: 'agencies', title: 'الوكالات الدوائية', icon: 'building', tile: 'bg-blue' },
+  { key: 'priced', title: 'الأصناف المسعرة', icon: 'dollar', tile: 'bg-cyan' },
+  { key: 'indications', title: 'دواعي الاستعمال', icon: 'flask', tile: 'bg-violet' },
+  { key: 'interactions', title: 'التفاعلات الدوائية', icon: 'interaction', tile: 'bg-teal' },
+  { key: 'adverse', title: 'الآثار الجانبية', icon: 'shield', tile: 'bg-coral' },
+  { key: 'diseases', title: 'فئة الأمراض', icon: 'heart', tile: 'bg-rose' },
+  { key: 'directory', title: 'الدليل الطبي', icon: 'book', tile: 'bg-indigo' },
+  { key: 'scientific', title: 'فئة الاسم العلمي', icon: 'molecule', tile: 'bg-mint' },
+  { key: 'prescriptions', title: 'وصفة', icon: 'clipboard', tile: 'bg-amber' }
 ];
 function sectionMeta(key) {
   return SECTIONS.find(s => s.key === key) || SECTIONS[8];
@@ -85,6 +98,7 @@ const state = {
   effects: null, effectSciIds: null, sciEffects: null,
   pregCat: null, pregBySci: null,
   searchQuery: '',
+  searching: false,
   sectionQuery: '',
   listShown: 100,
   pickA: null, pickB: null
@@ -130,7 +144,6 @@ async function loadCore() {
     const s = sciById[d.idScien];
     return [d, normalize([d.drugName_en, d.drugName_ar, s ? s.scientificName_en : '', s ? s.scientificName_ar : '', d.pack].join(' '))];
   });
-  $('#topbarNote').textContent = fmt(drugs.length) + ' دواء • ' + fmt(scientific.length) + ' اسم علمي • ' + fmt(proxies.length) + ' وكيل';
 }
 
 /* تحميل كسول لمجموعات الجولة الثانية — كل مجموعة مرة واحدة فقط. */
@@ -245,130 +258,120 @@ function sortedByAr(list, getAr, getEn) {
     return x.localeCompare(y, 'ar');
   });
 }
+function go(hash) { location.hash = hash; }
 
+/* شارة تيليجرام — نفس أيقونة التطبيق (قرص #229ED9 + سهم أبيض). */
+const TELEGRAM_SVG = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" fill="#fff" transform="translate(0.5 0) scale(0.9)"/></svg>';
+
+/* ================= بطاقة نتيجة مدمجة — مطابقة item_result_card.xml ================= */
 function drugCard(d) {
   const s = state.core.sciById[d.idScien];
   const sAr = sciNameAr(s), sEn = s ? (s.scientificName_en || '') : '';
-  return '<article class="drug-card">' +
-    '<div class="drug-main">' +
-      '<div class="drug-label">الاسم التجاري</div>' +
-      '<div class="drug-name-ar">' + esc(drugNameAr(d)) + '</div>' +
-      '<div class="drug-name-en" dir="ltr" style="text-align:right">' + esc(d.drugName_en || '') + '</div>' +
-      '<div class="drug-sci">' +
-        '<div class="drug-label">الاسم العلمي</div>' +
-        '<div class="sci-ar">' + esc(sAr) + '</div>' +
-        '<div class="sci-en" dir="ltr" style="text-align:right">' + esc(sEn) + '</div>' +
+  const pack = (d.pack || '').trim() || 'غير متوفر';
+  return '<article class="drug-card" data-drug="' + d.id + '">' +
+    '<div class="card-top">' +
+      '<div class="drug-main">' +
+        '<div class="drug-label">الاسم التجاري</div>' +
+        '<div class="drug-name-ar">' + esc(drugNameAr(d)) + '</div>' +
+        (d.drugName_en ? '<div class="drug-name-en" dir="ltr" style="text-align:right">' + esc(d.drugName_en) + '</div>' : '') +
+        '<div class="drug-sci">' +
+          '<div class="drug-label">الاسم العلمي</div>' +
+          '<div class="sci-ar">' + esc(sAr) + '</div>' +
+          (sEn ? '<div class="sci-en" dir="ltr" style="text-align:right">' + esc(sEn) + '</div>' : '') +
+        '</div>' +
       '</div>' +
-      '<div class="drug-actions">' +
-        '<button class="btn-more" data-act="details" data-id="' + d.id + '">تفاصيل أكثر</button>' +
-        '<button class="btn-similar" data-act="similar" data-id="' + d.id + '">أصناف مشابهة</button>' +
-      '</div>' +
+      '<div class="card-divider"></div>' +
+      '<div class="pack-box"><div class="pack-label">العبوة</div>' + packIcon(d.pack) +
+        '<div class="pack-val">' + esc(pack) + '</div></div>' +
     '</div>' +
-    '<div class="pack-box"><div class="pack-label">العبوة</div>' + packIcon(d.pack) +
-      '<div class="pack-val">' + esc((d.pack || '').trim() || 'غير متوفر') + '</div></div>' +
+    '<div class="drug-actions">' +
+      '<button class="btn-more" data-act="details" data-id="' + d.id + '">' + icon('info', 16) + 'تفاصيل أكثر</button>' +
+      '<button class="btn-similar" data-act="similar" data-id="' + d.id + '">' + icon('layers', 16) + 'أصناف مشابهة</button>' +
+    '</div>' +
   '</article>';
 }
 
 function bindCardActions(root) {
   root.querySelectorAll('[data-act]').forEach(b => {
-    b.addEventListener('click', () => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
       if (b.dataset.act === 'details') go('#/drug/' + b.dataset.id);
       else go('#/drug/' + b.dataset.id + '?similar=1');
     });
   });
-}
-
-function go(hash) { location.hash = hash; }
-
-function navHTML(active) {
-  let h = '<div class="nav-label">الرئيسية</div>' +
-    '<button class="nav-item' + (active === 'home' ? ' active' : '') + '" data-nav="#/">' + icon('home') + ' الرئيسية</button>' +
-    '<div class="nav-label">الأقسام</div>';
-  SECTIONS.forEach(s => {
-    h += '<button class="nav-item' + (active === s.key ? ' active' : '') + '" data-nav="#/section/' + s.key + '">' +
-      icon(s.icon) + ' ' + esc(s.title) + '</button>';
+  /* الضغط على البطاقة نفسها يفتح التفاصيل — كما في التطبيق. */
+  root.querySelectorAll('.drug-card[data-drug]').forEach(c => {
+    c.addEventListener('click', () => go('#/drug/' + c.dataset.drug));
   });
-  return h;
 }
 
-/* ================= الصفحة الرئيسية ================= */
-function renderHome() {
-  const c = state.core;
-  $('#mainNav').innerHTML = navHTML('home');
-  view.innerHTML =
-    '<section class="hero">' +
-      '<div class="hero-reason">Dr. Reason</div>' +
-      '<h1>الدليل اليمني الشامل للأدوية</h1>' +
-      '<p>مرجعك الدوائي — ابحث بالاسم التجاري أو العلمي، بالعربية أو الإنجليزية.</p>' +
-      '<div class="hero-stats">' +
-        '<div><b>' + fmt(c.drugs.length) + '</b><br><span>دواء مسعّر</span></div>' +
-        '<div><b>' + fmt(c.scientific.length) + '</b><br><span>اسم علمي</span></div>' +
-        '<div><b>' + fmt(c.proxies.length) + '</b><br><span>وكيل دوائي</span></div>' +
-        '<div><b>' + fmt(c.companies.length) + '</b><br><span>شركة منتجة</span></div>' +
-      '</div>' +
-    '</section>' +
-    '<div class="action-bar"><span class="ab-text">نسخة الويب — تعمل بدون تثبيت، في أي متصفح</span>' +
-      '<button data-goto="#/section/diseases">فئة الأمراض</button>' +
-      '<button data-goto="#/section/interactions">فحص التفاعلات</button>' +
-      '<button data-goto="#/section/priced">كل الأصناف</button>' +
-    '</div>' +
-    '<section class="search-card">' +
-      '<p class="eyebrow">بحث سريع ودقيق</p><h2>ابحث عن دواء</h2>' +
-      '<div class="search-row">' +
-        '<input id="searchBox" type="search" placeholder="اكتب اسم الدواء…" value="' + esc(state.searchQuery) + '" autocomplete="off">' +
-        '<button id="searchBtn">بحث</button>' +
-      '</div>' +
-      '<p class="search-hint">اكتب الاسم العلمي أو التجاري، بالعربية أو الإنجليزية — تظهر النتائج أثناء الكتابة.</p>' +
-    '</section>' +
-    '<div id="searchResults"></div>' +
-    '<div id="homeTiles">' +
-      '<div class="features">' +
-        '<div class="feature f1"><h3>بحث سريع ودقيق</h3><p>ابحث بالاسم التجاري أو العلمي، بالعربية أو الإنجليزية، وتظهر النتائج أثناء الكتابة.</p></div>' +
-        '<div class="feature f2"><h3>يعمل في كل مكان</h3><p>افتحه من أي هاتف أو كمبيوتر، من المتصفح مباشرة — بدون تثبيت وبدون حساب.</p></div>' +
-        '<div class="feature f3"><h3>بيانات كاملة</h3><p>' + fmt(c.drugs.length) + ' صنفاً دوائياً مسعراً، مع الوكيل والشركة المنتجة ودواعي الاستعمال.</p></div>' +
-      '</div>' +
-      '<div class="tiles">' + SECTIONS.map(s =>
-        '<button class="tile" data-goto="#/section/' + s.key + '">' +
-          '<span class="tile-ic">' + icon(s.icon, 26) + '</span>' +
-          '<h3>' + esc(s.title) + '</h3><p>' + esc(s.desc) + '</p>' +
-        '</button>').join('') +
-      '</div>' +
-    '</div>';
-
-  view.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => go(b.dataset.goto)));
+/* ================= البحث — نفس سلوك MainActivity =================
+   التركيز على الحقل يدخل وضع البحث (الترويسة تختفي والبطاقة ترتفع
+   للأعلى والشبكة تختفي)؛ الكتابة تبحث لحظياً؛ زر «الرئيسية» يعيد. */
+function setSearching(on) {
+  state.searching = on;
+  document.body.classList.toggle('searching', on);
+  if (!on) { renderHome(); return; }
+  runSearch();
+}
+function enterSearch() {
+  if (!state.searching) setSearching(true);
+  else runSearch();
+}
+function showHome() {
   const box = $('#searchBox');
-  let timer = null;
-  box.addEventListener('input', () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { state.searchQuery = box.value.trim(); runSearch(); }, 200);
-  });
-  box.addEventListener('keydown', e => { if (e.key === 'Enter') { state.searchQuery = box.value.trim(); runSearch(); } });
-  $('#searchBtn').addEventListener('click', () => { state.searchQuery = box.value.trim(); runSearch(); });
-  if (state.searchQuery) runSearch();
+  if (box) box.blur();
+  setSearching(false);
 }
 
 function runSearch() {
-  const box = $('#searchResults');
-  const tiles = $('#homeTiles');
-  if (!box) return;
+  const view = $('#view');
   const q = normalize(state.searchQuery);
   if (q.length < 2) {
-    box.innerHTML = '';
-    if (tiles) tiles.style.display = '';
+    /* وضع البحث بلا حروف كافية — حالة «ابحث عن دوائك» في التطبيق. */
+    view.innerHTML = '<div class="empty-state"><div class="empty-ic">' + icon('pill', 34) + '</div>' +
+      '<h3>ابحث عن دوائك</h3><p>اكتب الاسم العلمي أو التجاري، بالعربية أو الإنجليزية.</p></div>';
     return;
   }
-  if (tiles) tiles.style.display = 'none';
   const matches = [];
   for (const [d, hay] of state.haystacks) {
     if (hay.indexOf(q) !== -1) { matches.push(d); if (matches.length >= 50) break; }
   }
   if (!matches.length) {
-    box.innerHTML = '<div class="empty-state"><h3>لم نجد نتائج مطابقة</h3><p>جرّب البحث باسم علمي أو تجاري بالعربية أو الإنجليزية.</p></div>';
+    view.innerHTML = '<div class="empty-state"><div class="empty-ic">' + icon('search', 34) + '</div>' +
+      '<h3>لم نجد نتائج مطابقة</h3><p>جرّب البحث باسم علمي أو تجاري بالعربية أو الإنجليزية.</p></div>';
     return;
   }
-  box.innerHTML = '<div class="results-head"><h2>النتائج</h2><span>عرض أول ' + matches.length + ' نتيجة</span></div>' +
-    '<div class="drug-list">' + matches.map(drugCard).join('') + '</div>';
-  bindCardActions(box);
+  /* بلا عنوان «النتائج» وبلا عدّاد — البطاقات تظهر مباشرة، كما في التطبيق. */
+  view.innerHTML = '<div class="drug-list">' + matches.map(drugCard).join('') + '</div>';
+  bindCardActions(view);
+}
+
+/* ================= الصفحة الرئيسية ================= */
+function renderHome() {
+  const c = state.core;
+  const view = $('#view');
+  if (state.searching) { runSearch(); return; }
+  view.innerHTML =
+    '<div class="sections-head">' +
+      '<div class="sec-titles"><div class="sec-kicker">خدمات الدليل</div>' +
+      '<div class="sec-title">استكشف الأقسام</div></div>' +
+      '<span class="sec-count">٩ أقسام</span>' +
+    '</div>' +
+    '<div class="features-surface">' +
+      '<div class="features-watermark">' + icon('pill', 200) + '</div>' +
+      '<div class="tiles">' + SECTIONS.map(s =>
+        '<button class="tile" data-goto="#/section/' + s.key + '">' +
+          '<span class="tile-ic ' + s.tile + '">' + icon(s.icon, 29) + '</span>' +
+          '<h3>' + esc(s.title) + '</h3>' +
+        '</button>').join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="reason-badge-wrap">' +
+      '<a class="reason-badge" href="https://t.me/Med_tips_and_tricks" target="_blank" rel="noopener">' +
+        TELEGRAM_SVG + 'Done by Dr. Reason</a>' +
+    '</div>';
+  view.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => go(b.dataset.goto)));
 }
 
 /* ================= الأقسام ================= */
@@ -389,35 +392,54 @@ function sectionRows(key) {
   return [];
 }
 
+/* ترويسة الصفحة الفرعية — مطابقة activity_section/activity_interaction:
+   شريط متدرج فيه «خدمات الدليل» + العنوان + زر الرئيسية (+ زر القائمة
+   عند عرض أصناف صف). */
+function pageHead(title, withListBack, listBackHref) {
+  return '<div class="page-head">' +
+    '<div class="ph-titles"><div class="ph-kicker">خدمات الدليل</div>' +
+    '<div class="ph-title">' + esc(title) + '</div></div>' +
+    (withListBack ? '<button class="ph-btn list" data-goto="' + listBackHref + '">' + icon('arrow', 18) + 'القائمة</button>' : '') +
+    '<button class="ph-btn home" data-goto="#/">' + icon('arrow', 18) + 'الرئيسية</button>' +
+  '</div>';
+}
+function bindPageHeadBtns(root) {
+  root.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => go(b.dataset.goto)));
+}
+
 async function renderSection(key, rowId) {
   const meta = sectionMeta(key);
-  $('#mainNav').innerHTML = navHTML(key);
+  const view = $('#view');
   if (key === 'interactions') { renderInteractions(); return; }
   if (key === 'prescriptions') {
-    view.innerHTML = '<div class="section-head"><button class="back-btn" data-goto="#/">‹ الرئيسية</button><h2>' + esc(meta.title) + '</h2></div>' +
-      '<div class="placeholder"><h3>لا توجد بيانات للوصفات</h3><p>لا توجد بيانات وصفات في قاعدة البيانات، لذلك لا يمكن عرض وصفات هنا.<br>هذه الواجهة جاهزة لربط البيانات الأصلية عند توفرها — ولم نضع أي بيانات مختلقة.</p></div>';
-    view.querySelector('[data-goto]').addEventListener('click', () => go('#/'));
+    view.innerHTML = pageHead(meta.title, false) +
+      '<div class="placeholder"><div class="ph-ic">' + icon('clipboard', 49) + '</div>' +
+      '<h3>لا توجد بيانات للوصفات</h3>' +
+      '<p>لا توجد بيانات وصفات في قاعدة البيانات، لذلك لا يمكن عرض وصفات هنا.<br>هذه الواجهة جاهزة لربط البيانات الأصلية عند توفرها — ولم نضع أي بيانات مختلقة.</p>' +
+      '<span class="flag">واجهة جاهزة لربط البيانات الأصلية</span></div>';
+    bindPageHeadBtns(view);
     return;
   }
   if (key === 'diseases') await ensureExtraSafe('diseases');
   if (key === 'adverse') await ensureExtraSafe('effects');
   if (rowId != null) { renderSectionDrugs(key, Number(rowId)); return; }
 
-  view.innerHTML = '<div class="section-head"><button class="back-btn" data-goto="#/">‹ الرئيسية</button><h2>' + esc(meta.title) + '</h2><span class="cnt" id="secCount"></span></div>' +
+  view.innerHTML = pageHead(meta.title, false) +
     '<div id="secBody"><div class="loading"><div class="spin"></div>جاري تجهيز القائمة…</div></div>';
-  view.querySelector('[data-goto]').addEventListener('click', () => go('#/'));
+  bindPageHeadBtns(view);
 
   if (key === 'priced') {
     const drugs = sortedByAr(state.core.drugs, d => d.drugName_ar, d => d.drugName_en);
-    renderDrugListPage(meta.title, drugs, 'الأصناف المسعرة', key);
+    renderDrugListPage(drugs);
     return;
   }
   const rows = sectionRows(key);
   const searchable = (key === 'diseases' || key === 'adverse');
   state.sectionQuery = '';
   state.listShown = 100;
-  view.querySelector('#secBody').innerHTML =
+  $('#secBody').innerHTML =
     (searchable ? '<div class="section-search"><input id="secSearch" type="search" placeholder="ابحث في القائمة…" autocomplete="off"></div>' : '') +
+    '<div class="section-count" id="secCount"></div>' +
     '<div class="row-list" id="rowList"></div>' +
     '<div id="rowMore"></div>';
   const drawRows = () => {
@@ -429,7 +451,8 @@ async function renderSection(key, rowId) {
       '<button class="row-item" data-row="' + r.id + '"><span class="row-t"><span class="row-title">' + esc(r.title) + '</span>' +
       (r.sub ? '<br><span class="row-sub">' + esc(r.sub) + '</span>' : '') + '</span>' +
       (r.count != null && r.count > 0 ? '<span class="count-badge">' + fmt(r.count) + '</span>' : '') +
-      '</button>').join('') || '<div class="empty-state"><h3>لا توجد عناصر مطابقة</h3></div>';
+      '<span class="chev">' + icon('chevron', 24) + '</span></button>').join('') ||
+      '<div class="empty-state"><h3>لا توجد عناصر مطابقة</h3></div>';
     $('#rowList').querySelectorAll('[data-row]').forEach(b => b.addEventListener('click', () => go('#/section/' + key + '/' + b.dataset.row)));
     $('#rowMore').innerHTML = filtered.length > state.listShown
       ? '<button class="more-btn" id="moreRows">عرض المزيد (' + fmt(filtered.length - state.listShown) + ' متبقية)</button>' : '';
@@ -441,13 +464,13 @@ async function renderSection(key, rowId) {
   if (ss) ss.addEventListener('input', () => { state.sectionQuery = ss.value.trim(); state.listShown = 100; drawRows(); });
 }
 
-function renderDrugListPage(title, drugs, label, key) {
+function renderDrugListPage(drugs) {
   state.listShown = 100;
   const body = $('#secBody');
-  $('#secCount').textContent = fmt(drugs.length) + ' دواء';
   const draw = () => {
     const shown = drugs.slice(0, state.listShown);
-    body.innerHTML = '<div class="drug-list">' + shown.map(drugCard).join('') + '</div>' +
+    body.innerHTML = '<div class="section-count">' + fmt(drugs.length) + ' دواء</div>' +
+      '<div class="drug-list">' + shown.map(drugCard).join('') + '</div>' +
       (drugs.length > state.listShown ? '<button class="more-btn" id="moreDrugs">عرض المزيد (' + fmt(drugs.length - state.listShown) + ' متبقية)</button>' : '');
     bindCardActions(body);
     const mb = $('#moreDrugs');
@@ -459,6 +482,7 @@ function renderDrugListPage(title, drugs, label, key) {
 function renderSectionDrugs(key, rowId) {
   const meta = sectionMeta(key);
   const c = state.core;
+  const view = $('#view');
   let title = '', drugs = [];
   if (key === 'agencies') {
     const p = c.proxyById[rowId];
@@ -484,19 +508,28 @@ function renderSectionDrugs(key, rowId) {
     drugs = c.drugs.filter(d => ids.has(d.idScien));
   }
   drugs = sortedByAr(drugs, d => d.drugName_ar, d => d.drugName_en).slice(0, 50);
-  view.innerHTML = '<div class="section-head"><button class="back-btn" data-goto="#/section/' + key + '">‹ القائمة</button><h2>' + esc(title) + '</h2><span class="cnt">' + fmt(drugs.length) + ' دواء</span></div>' +
+  view.innerHTML = pageHead(title || meta.title, true, '#/section/' + key) +
+    '<div class="section-count">' + fmt(drugs.length) + ' دواء</div>' +
     (drugs.length
       ? '<div class="drug-list">' + drugs.map(drugCard).join('') + '</div>'
       : '<div class="empty-state"><h3>لا توجد أصناف مسجلة هنا</h3></div>');
-  view.querySelector('[data-goto]').addEventListener('click', () => go('#/section/' + key));
+  bindPageHeadBtns(view);
   bindCardActions(view);
 }
 
-/* ================= تفاصيل الدواء ================= */
+/* ================= تفاصيل الدواء — مطابقة activity_details.xml =================
+   الترتيب الأصلي: الاسم (إنجليزي ثم عربي) → العبوة+الوحدة → السعر →
+   الوكيل → الشركة → الاسم العلمي → الفئة → [فئة الأمراض، التركيبة،
+   آلية العمل] → دواعي الاستعمال → [الجرعة، التحذيرات، فئة الحمل،
+   الآثار الجانبية والتفاعلات القابلان للطي] → أصناف مشابهة. */
+function dSection(title, inner) {
+  return '<div class="d-section"><h3>' + esc(title) + '</h3>' + inner + '</div>';
+}
+
 async function renderDrug(id, openSimilar) {
   const c = state.core;
+  const view = $('#view');
   const d = c.drugs.find(x => x.id === id);
-  $('#mainNav').innerHTML = navHTML('home');
   if (!d) {
     view.innerHTML = '<div class="empty-state"><h3>الدواء غير موجود</h3><p><a href="#/">عودة للرئيسية</a></p></div>';
     return;
@@ -513,64 +546,100 @@ async function renderDrug(id, openSimilar) {
   const indAr = info && (info.indicationsAr || '').trim() ? info.indicationsAr : useAr;
   const diseases = (state.sciDiseases && state.sciDiseases[d.idScien]) || [];
   const preg = state.pregBySci ? state.pregBySci[d.idScien] : null;
+  const na = 'غير متوفر';
 
   let h = '<div class="details">' +
-    '<a class="back-chip" href="#/">‹ النتائج</a>' +
-    '<div class="d-en" dir="ltr" style="text-align:right">' + esc(d.drugName_en || '') + '</div>' +
-    '<h1>' + esc(drugNameAr(d)) + '</h1>' +
-    '<div class="detail-pack">العبوة: <b>' + esc((d.pack || '').trim() || 'غير متوفر') + '</b></div>';
+    '<div class="details-head"><div class="details-title">تفاصيل العلاج</div>' +
+    '<a class="back-chip" href="#/">' + icon('arrow', 18) + 'النتائج</a></div>' +
+    '<div class="d-name-en" dir="ltr" style="text-align:right">' + esc(d.drugName_en || drugNameAr(d)) + '</div>' +
+    '<div class="d-name-ar">' + esc(drugNameAr(d)) + '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="detail-pack"><b>العبوة :</b> ' + esc((d.pack || '').trim() || na) +
+    '    <b>الوحدة :</b> ' + esc((d.unit || '').trim() || na) + '</div>';
 
-  if ((d.price || '').trim()) {
-    h += '<div class="d-section"><h3>السعر</h3><p class="price-line">' + esc(d.price.trim()) + ' <span class="cur">ريال يمني</span></p></div>';
+  h += dSection('السعر', '<p class="d-value price">' +
+    ((d.price || '').trim() ? esc(d.price.trim()) + ' ريال يمني' : na) + '</p>');
+  h += dSection('الوكيل', '<p class="d-value">' +
+    esc(proxy ? ((proxy.proxyName_ar || '').trim() || proxy.proxyName_en || '') : na) + '</p>');
+  h += dSection('الشركة المنتجة', '<p class="d-value">' +
+    esc(comp ? ((comp.companyName_ar || '').trim() || comp.companyName_en || '') + (comp.country_ar ? ' (' + comp.country_ar + ')' : '') : na) + '</p>');
+  h += dSection('الاسم العلمي',
+    '<p class="d-value" dir="ltr" style="text-align:right">' + esc(s ? (s.scientificName_en || na) : na) + '</p>' +
+    '<p class="d-value">' + esc(s ? (s.scientificName_ar || na) : na) + '</p>');
+
+  const classNames = classes.map(x => (x.classAr || '').trim() || x.classEn || '').filter(Boolean);
+  h += dSection('الفئة', classNames.length
+    ? '<div class="chips">' + classNames.map(n => '<span class="chip">' + esc(n) + '</span>').join('') + '</div>'
+    : '<p class="d-value">' + na + '</p>');
+
+  if (info) {
+    const diseaseNames = diseases.map(did => {
+      const dd = (state.diseases || []).find(x => x.diseaseId === did);
+      return dd ? ((dd.diseaseAr || '').trim() || dd.diseaseEn || '') : '';
+    }).filter(Boolean);
+    if (diseaseNames.length) {
+      h += dSection('فئة الأمراض', '<div class="chips">' +
+        diseaseNames.map(n => '<span class="chip">' + esc(n) + '</span>').join('') + '</div>');
+    }
+    if ((info.chemicalComposition || '').trim()) {
+      h += dSection('التركيبة الكيميائية', '<p class="d-value ltr">' + esc(info.chemicalComposition.trim()) + '</p>');
+    }
+    const ar = f => (info[f + 'Ar'] || '').trim() ? info[f + 'Ar'] : (info[f + 'En'] || '');
+    if (ar('mechanismOfAction').trim()) {
+      h += dSection('آلية العمل', '<p class="d-value">' + esc(ar('mechanismOfAction')) + '</p>');
+    }
   }
-  if (proxy) h += '<div class="d-section"><h3>الوكيل</h3><p>' + esc((proxy.proxyName_ar || '').trim() || proxy.proxyName_en || '') + '</p></div>';
-  if (comp) h += '<div class="d-section"><h3>الشركة المنتجة</h3><p>' + esc((comp.companyName_ar || '').trim() || comp.companyName_en || '') + (comp.country_ar ? ' — ' + esc(comp.country_ar) : '') + '</p></div>';
-  if (s) h += '<div class="d-section"><h3>الاسم العلمي</h3><p dir="ltr" style="text-align:right">' + esc(s.scientificName_en || '') + '</p><p>' + esc(s.scientificName_ar || '') + '</p></div>';
-  if (classes.length || (info && diseases.length)) {
-    h += '<div class="d-section"><h3>الفئة</h3><div class="chips">' +
-      classes.filter(x => (x.classAr || x.classEn || '').trim()).map(x => '<span class="chip">' + esc((x.classAr || '').trim() || x.classEn) + '</span>').join('') +
-      (info ? diseases.map(did => {
-        const dd = (state.diseases || []).find(x => x.diseaseId === did);
-        return dd ? '<span class="chip">' + esc((dd.diseaseAr || '').trim() || dd.diseaseEn) + '</span>' : '';
-      }).join('') : '') +
-      '</div></div>';
-  }
-  if ((indAr || '').trim()) h += '<div class="d-section"><h3>دواعي الاستعمال</h3><p>' + esc(indAr) + '</p></div>';
+
+  h += dSection('دواعي الاستعمال', '<p class="d-value">' +
+    esc((indAr || '').trim() ? indAr.replace(/\r\n/g, '\n').replace(/\r/g, '\n') : 'لا تتوفر دواعي استعمال موثقة لهذا الصنف في قاعدة البيانات.') + '</p>');
 
   if (info) {
     const ar = f => (info[f + 'Ar'] || '').trim() ? info[f + 'Ar'] : (info[f + 'En'] || '');
-    if ((info.chemicalComposition || '').trim()) h += '<div class="d-section"><h3>التركيبة الكيميائية</h3><p class="ltr">' + esc(info.chemicalComposition) + '</p></div>';
-    if (ar('mechanismOfAction').trim()) h += '<div class="d-section"><h3>آلية العمل</h3><p>' + esc(ar('mechanismOfAction')) + '</p></div>';
     const dosageParts = [];
-    if ((info.dosageAr || info.dosageEn || '').trim()) dosageParts.push(['الجرعة العامة', ar('dosage')]);
+    if ((info.dosageAr || info.dosageEn || '').trim()) dosageParts.push(['', ar('dosage')]);
     if (ar('adults').trim()) dosageParts.push(['البالغون', ar('adults')]);
     if (ar('children').trim()) dosageParts.push(['الأطفال', ar('children')]);
     if (ar('theElderly').trim()) dosageParts.push(['كبار السن', ar('theElderly')]);
     if (dosageParts.length) {
-      h += '<div class="d-section"><h3>الجرعة</h3>' + dosageParts.map(p => '<p><b>' + esc(p[0]) + ':</b><br>' + esc(p[1]) + '</p>').join('') + '</div>';
+      h += dSection('الجرعة', dosageParts.map(p =>
+        (p[0] ? '<p class="dose-label">' + esc(p[0]) + '</p>' : '') +
+        '<p class="d-value">' + esc(p[1]) + '</p>').join(''));
     }
-    if (ar('warnings').trim()) h += '<div class="d-section"><h3>التحذيرات والاحتياطات</h3><p>' + esc(ar('warnings')) + '</p></div>';
-    if (preg) h += '<div class="d-section"><h3>فئة الحمل</h3><p><b>' + esc(preg) + '</b></p></div>';
-    h += '<details class="rich" id="collEffects"><summary>عرض الآثار الجانبية</summary><div class="rich-body" id="effectsBody">جاري التحميل…</div></details>';
-    h += '<details class="rich" id="collInter"><summary>عرض التفاعلات</summary><div class="rich-body" id="interBody">جاري التحميل…</div></details>';
+    if (ar('warnings').trim()) {
+      h += dSection('التحذيرات والاحتياطات', '<p class="d-value">' + esc(ar('warnings')) + '</p>');
+    }
+    if (preg) {
+      h += dSection('فئة الحمل', '<p class="d-value">' + esc(preg) + '</p>');
+    }
+    h += '<div class="coll"><button class="coll-head" type="button" data-coll="effects">عرض الآثار الجانبية ‹</button>' +
+      '<div class="coll-body" id="effectsBody" hidden>جاري التحميل…</div></div>';
+    h += '<div class="coll"><button class="coll-head" type="button" data-coll="inter">عرض التفاعلات ‹</button>' +
+      '<div class="coll-body" id="interBody" hidden>جاري التحميل…</div></div>';
   }
 
   const similar = c.drugs.filter(x => x.idScien === d.idScien && x.id !== d.id).slice(0, 50);
-  h += '<h3 class="similar-title">أصناف مشابهة</h3>' +
+  h += '<div class="d-section"><h3>أصناف مشابهة</h3>' +
     (similar.length
-      ? '<div class="drug-list">' + similar.map(drugCard).join('') + '</div>'
-      : '<div class="empty-state"><p>لا توجد أصناف مشابهة مسجّلة لهذا الاسم العلمي.</p></div>');
+      ? '<div class="similar-list drug-list">' + similar.map(drugCard).join('') + '</div>'
+      : '<p class="similar-empty">لا توجد أصناف مشابهة مسجّلة لهذا الاسم العلمي.</p>') +
+    '</div>';
   h += '</div>';
   view.innerHTML = h;
   bindCardActions(view);
+  view.querySelectorAll('.coll-head').forEach(b => {
+    b.addEventListener('click', () => {
+      const body = b.parentElement.querySelector('.coll-body');
+      const open = body.hidden;
+      body.hidden = !open;
+      b.textContent = b.textContent.replace(open ? '‹' : '›', open ? '›' : '‹');
+    });
+  });
 
   if (openSimilar) {
-    const el = view.querySelector('.similar-title');
+    const el = view.querySelector('.d-section:last-child h3');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   }
-  if (info) {
-    fillCollapsibles(d.idScien);
-  }
+  if (info) fillCollapsibles(d.idScien);
 }
 
 async function fillCollapsibles(sciId) {
@@ -581,7 +650,7 @@ async function fillCollapsibles(sciId) {
     const names = ids.map(id => (state.effects || []).find(x => x.effectsId === id)).filter(Boolean)
       .map(x => (x.sideEffectsAr || '').trim() || x.sideEffectsEn);
     eb.innerHTML = names.length
-      ? names.map(n => '<div class="rich-item">' + esc(n) + '</div>').join('')
+      ? names.map(n => '<div class="fx-item">• ' + esc(n) + '</div>').join('')
       : 'لا توجد بيانات مسجلة';
   }
   try { await ensureExtra('interactions'); } catch (e) { /* يبقى نص التحميل */ }
@@ -590,34 +659,28 @@ async function fillCollapsibles(sciId) {
     const posts = (state.postsBySci && state.postsBySci[sciId]) || [];
     ib.innerHTML = posts.length
       ? posts.slice(0, 50).map(p => {
-          const other = state.interNames ? state.interNames[p.other] : null;
-          const name = other ? ((other.interactionsAr || '').trim() || other.interactionsEn || '') : '';
           const label = seriousLabel(p);
-          return '<div class="rich-item">' +
+          return '<div class="inter-post">' +
             (label ? '<div class="sev">' + esc(label) + '</div>' : '') +
-            (name ? '<div><b>' + esc(name) + '</b></div>' : '') +
-            '<div>' + esc((p.textAr || '').trim() || p.textEn || '') + '</div></div>';
-        }).join('') + (posts.length > 50 ? '<div class="rich-item">عرض أول 50 من ' + fmt(posts.length) + ' تفاعلاً مسجلاً</div>' : '')
+            '<p>' + esc((p.textAr || '').trim() || p.textEn || '') + '</p></div>';
+        }).join('') + (posts.length > 50 ? '<p class="more-note">عرض أول 50 من ' + fmt(posts.length) + ' تفاعلاً مسجلاً</p>' : '')
       : 'لا توجد بيانات مسجلة';
   }
 }
 
-/* ================= فاحص التفاعلات ================= */
+/* ================= فاحص التفاعلات — مطابقة activity_interaction.xml ================= */
 function renderInteractions() {
-  $('#mainNav').innerHTML = navHTML('interactions');
-  view.innerHTML =
-    '<div class="section-head"><button class="back-btn" data-goto="#/">‹ الرئيسية</button><h2>التفاعلات الدوائية</h2></div>' +
-    '<div class="checker">' +
-      '<p style="margin-top:0">اختر دوائين بالاسم العلمي لفحص التفاعل بينهما. التفاعلات المعروضة هي المسجلة في قاعدة البيانات فقط — وما ليس مسجلاً يظهر كرسالة صريحة، لا كإجابة مختلقة.</p>' +
-      '<div class="pickers">' +
-        '<div class="pick-field"><label>الاسم العلمي الأول</label><div class="pick-box" id="pickA">اختر دواء…</div></div>' +
-        '<button class="swap-btn" id="swapBtn">⇄ تبديل</button>' +
-        '<div class="pick-field"><label>الاسم العلمي الثاني</label><div class="pick-box" id="pickB">اختر دواء…</div></div>' +
-      '</div>' +
-      '<button class="check-btn" id="checkBtn" disabled>فحص التفاعل</button>' +
-      '<div id="checkResult"></div>' +
-    '</div>';
-  view.querySelector('[data-goto]').addEventListener('click', () => go('#/'));
+  const view = $('#view');
+  view.innerHTML = pageHead('التفاعلات الدوائية', false) +
+    '<p style="margin:0 0 4px;font-size:14.5px;color:var(--muted)">اختر دوائين بالاسم العلمي لفحص التفاعل بينهما. التفاعلات المعروضة هي المسجلة في قاعدة البيانات فقط — وما ليس مسجلاً يظهر كرسالة صريحة، لا كإجابة مختلقة.</p>' +
+    '<label class="checker-label" style="margin-top:14px">الاسم العلمي الأول</label>' +
+    '<div class="pick-box" id="pickA">اختر دواء…</div>' +
+    '<button class="swap-btn" id="swapBtn" type="button">⇄ تبديل</button>' +
+    '<label class="checker-label">الاسم العلمي الثاني</label>' +
+    '<div class="pick-box" id="pickB">اختر دواء…</div>' +
+    '<button class="check-btn" id="checkBtn" type="button" disabled>فحص التفاعل</button>' +
+    '<div class="check-result" id="checkResult"></div>';
+  bindPageHeadBtns(view);
   const refresh = () => {
     $('#pickA').textContent = state.pickA ? sciNameAr(state.pickA) : 'اختر دواء…';
     $('#pickB').textContent = state.pickB ? sciNameAr(state.pickB) : 'اختر دواء…';
@@ -702,7 +765,7 @@ function postsHTML(title, posts) {
         (label ? '<div class="sev">' + esc(label) + '</div>' : '') +
         '<p>' + esc((p.textAr || '').trim() || p.textEn || '') + '</p></div>';
     }).join('') +
-    (posts.length > shown.length ? '<p style="text-align:center;color:var(--muted);font-size:13px">عرض أول ' + shown.length + ' من ' + fmt(posts.length) + ' تفاعلاً مسجلاً</p>' : '');
+    (posts.length > shown.length ? '<p class="more-note">عرض أول ' + shown.length + ' من ' + fmt(posts.length) + ' تفاعلاً مسجلاً</p>' : '');
 }
 
 /* ================= التوجيه والتشغيل ================= */
@@ -716,7 +779,8 @@ function parseHash() {
 async function render() {
   if (!state.core) return;
   const { parts, params } = parseHash();
-  closeSidebar();
+  /* الصفحات الفرعية (قسم/تفاصيل/فاحص) بلا ترويسة وبلا بطاقة بحث — كما في التطبيق. */
+  document.body.classList.toggle('subpage', parts.length > 0);
   if (parts.length === 0) { renderHome(); return; }
   if (parts[0] === 'section' && parts[1]) {
     if (parts[1] === 'interactions') { renderInteractions(); return; }
@@ -730,19 +794,27 @@ async function render() {
   renderHome();
 }
 
-function closeSidebar() { $('#sidebar').classList.remove('open'); }
-
 document.addEventListener('DOMContentLoaded', () => {
-  $('#menuBtn').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
-  $('#mainNav').addEventListener('click', e => {
-    const b = e.target.closest('[data-nav]');
-    if (b) { closeSidebar(); go(b.dataset.nav); }
+  const box = $('#searchBox');
+  let timer = null;
+  box.addEventListener('focus', enterSearch);
+  box.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { state.searchQuery = box.value.trim(); runSearch(); }, 200);
   });
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { state.searchQuery = box.value.trim(); enterSearch(); }
+  });
+  $('#searchTrigger').addEventListener('click', () => {
+    state.searchQuery = box.value.trim();
+    enterSearch();
+    box.focus();
+  });
+  $('#homeFromSearch').addEventListener('click', showHome);
   window.addEventListener('hashchange', render);
   loadCore().then(() => {
     render();
   }).catch(err => {
-    view.innerHTML = '<div class="empty-state"><h3>تعذّر تحميل البيانات</h3><p>' + esc(err.message || '') + '</p><p>تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. ملفات البيانات في مجلد data/ بجانب هذه الصفحة.</p></div>';
-    $('#topbarNote').textContent = 'تعذّر التحميل';
+    $('#view').innerHTML = '<div class="empty-state"><h3>تعذّر تحميل البيانات</h3><p>' + esc(err.message || '') + '</p><p>تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. ملفات البيانات في مجلد data/ بجانب هذه الصفحة.</p></div>';
   });
 });
