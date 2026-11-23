@@ -1,9 +1,9 @@
 /* الدليل اليمني الشامل للأدوية — service worker للتثبيت والعمل دون اتصال.
    يخبّئ الواجهة والبيانات الأساسية عند أول زيارة؛ ملفات الجولة الثانية
    تُخبَّأ عند أول استخدام لها. */
-const CACHE = 'aseel-drugs-v2';
+const CACHE = 'aseel-drugs-v3';
 const CORE = [
-  './', 'index.html', 'style.css', 'app.js', 'manifest.json',
+  './', 'index.html', 'style.css', 'app.js',
   'icon-192.png', 'icon-512.png',
   'data/scientific.json', 'data/drugs_1.json', 'data/drugs_2.json',
   'data/drugs_3.json', 'data/drugs_4.json', 'data/proxy.json',
@@ -24,6 +24,12 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // ملف التثبيت (manifest) يُجلب من الشبكة دائماً — لا يُخبَّأ أبداً،
+  // حتى لا يبقى كروم على هوية تثبيت قديمة.
+  if (new URL(e.request.url).pathname.endsWith('/manifest.json')) {
+    e.respondWith(fetch(e.request).catch(() => caches.match('index.html')));
+    return;
+  }
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit => {
       if (hit) return hit;
